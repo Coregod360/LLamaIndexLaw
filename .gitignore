@@ -1,1 +1,4 @@
-UScode.db
+/data
+.env
+USCode.db
+sqldump/*
