@@ -4,9 +4,6 @@ from llama_index import SimpleDirectoryReader
 from llama_index.node_parser import SimpleNodeParser
 from llama_index import VectorStoreIndex
 
-os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
-
-
 parser = SimpleNodeParser()
 
 documents = SimpleDirectoryReader('./data').load_data()
