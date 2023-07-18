@@ -2,6 +2,7 @@ import os
 import openai
 from dotenv import load_dotenv
 
+open_api_key = os.getenv("OPENAI_API_KEY")
 
 load_dotenv()
 
@@ -10,8 +11,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 from llama_index import VectorStoreIndex, SimpleDirectoryReader
 
-
-documents = SimpleDirectoryReader('./data').load_data()
+documents = SimpleDirectoryReader('./sqldump').load_data()
 
 index = VectorStoreIndex.from_documents(documents)
 
