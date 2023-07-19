@@ -3,7 +3,7 @@ import sys
 
 def main(filtered):
     print("load")
-    chunkSize = 1000
+    chunkSize = 1024
     allChunks = []
     for i in range(len(filtered)):
         row = filtered[i]
@@ -23,7 +23,7 @@ def main(filtered):
         thisChunks.append(firstLine + chunk)
         allChunks.append(firstLine + chunk)
         ## write chunks to file 
-    print(allChunks)
+    #print(allChunks)
     return allChunks
 
 if __name__ == '__main__':
