@@ -1,4 +1,7 @@
 /data
 .env
 USCode.db
-sqldump/*
+uscode/*
+__pycache__/*
+ingest/__pycache__/*
+*.json
