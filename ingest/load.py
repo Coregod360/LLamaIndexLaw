@@ -42,6 +42,7 @@ def main(filtered, metadata):
         firstLine = row.split("\n")[0]
         body = row.split("\n")[1]
         concat = firstLine + body
+        sqlDumpDir = './sqldump'
         localfilename = './sqldump/'+ thisMetadata[2] + "-" + thisMetadata[0] + '.txt'
         S3filename = 's3://'+ textS3Bucket +'/' + thisMetadata[2] + "-" + thisMetadata[0] + '.txt'
         with open(localfilename, 'a') as f:
@@ -60,7 +61,9 @@ def main(filtered, metadata):
         )
     #llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
     print("adding documents to textS3Bucket")
-    os.system('s3cmd put '+ localfilename + '/* ' + "s3://"+ textS3Bucket +"/ --recursive")
+    command = 's3cmd put '+ sqlDumpDir + '/* ' + "s3://"+ textS3Bucket +"/ --recursive"
+    print(command)
+    os.system(command)
     print("adding documents to nodes")
     nodes = parser.get_nodes_from_documents(documents)
     print("adding nodes to docstore")
