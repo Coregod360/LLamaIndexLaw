@@ -19,40 +19,62 @@ def main(filtered, metadata):
     textS3Bucket = 'lawlet-uscode'
     vectorS3Bucket = 'lawlet-uscode-vectors'
     localVectorDir = 'vectorstore'
+    localIndexDir = 'indexstore'
     allChunks = []
     documents = []
-    storage_context = StorageContext.from_defaults(persist_dir="localVectorDir")
-    index = load_index_from_storage(storage_context)
+    if not os.path.exists('./'+ localVectorDir):
+        os.makedirs('./'+ localVectorDir)
+    if not os.path.exists('./'+ localIndexDir):
+        os.makedirs('./'+ localIndexDir)
+    listSqlDump = os.listdir('./sqldump')
+    if len(listSqlDump) > 0:
+        for file in listSqlDump:
+            os.remove('./sqldump/'+ file)
+    if os.path.exists('./'+ localVectorDir + '/docstore.json'):
+        storage_context = StorageContext.from_defaults(persist_dir="localVectorDir")
+        index = load_index_from_storage(storage_context)
+    else:
+        storage_context = StorageContext.from_defaults()
     for i in range(len(filtered)):
+        thisMetadata = metadata[i]
         row = filtered[i]
         firstLine = row.split("\n")[0]
         body = row.split("\n")[1]
         concat = firstLine + body
-        localfilename = './sqldump/'+ metadata[0] + "-" + metadata[0] + '.txt'
-        S3filename = 's3://'+ textS3Bucket +'/' + metadata[0] + "-" + metadata[0] + '.txt'
+        localfilename = './sqldump/'+ thisMetadata[2] + "-" + thisMetadata[0] + '.txt'
+        S3filename = 's3://'+ textS3Bucket +'/' + thisMetadata[2] + "-" + thisMetadata[0] + '.txt'
         with open(localfilename, 'a') as f:
             f.write(concat)
-        os.system('s3cmd put '+ localfilename + ' ' + "s3://"+ textS3Bucket +"/")
         documents.append(
             Document(
                 text=concat,
                 metadata={
                     'filename': localfilename,
                     'S3filename': S3filename,
-                    'title': metadata[2],
-                    'number': metadata[0],
-                    'name': metadata[1]
+                    'title': thisMetadata[2],
+                    'number': thisMetadata[0],
+                    'name': thisMetadata[1]
                 }
             )
         )
-    llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
+    #llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
+    print("adding documents to textS3Bucket")
+    os.system('s3cmd put '+ localfilename + ' ' + "s3://"+ textS3Bucket +"/ --recursive")
+    print("adding documents to nodes")
     nodes = parser.get_nodes_from_documents(documents)
+    print("adding nodes to docstore")
     storage_context.docstore.add_documents(nodes)
-    #index = VectorStoreIndex(nodes)
+    print("adding nodes to vectorstore")
     thisVectorIndex = VectorStoreIndex(nodes, storage_context=storage_context)
+    print("adding nodes to listindex")
     thisListIndex = ListIndex(nodes, storage_context=storage_context)
+    print("persisting vectorstore")
     thisVectorIndex.storage_context.persist(persist_dir=localVectorDir)
-    os.system('s3cmd put '+ localVectorDir + ' ' + "s3://"+ vectorS3Bucket +"/")
-
+    print("persisting listindex")
+    thisListIndex.storage_context.persist(persist_dir=localVectorDir)
+    print("adding vectorstore to s3")
+    os.system('s3cmd put '+ localVectorDir + ' ' + "s3://"+ vectorS3Bucket +"/ --recursive")
+    print("adding listindex to s3")
+    os.system('s3cmd put '+ localIndexDir + ' ' + "s3://"+ vectorS3Bucket +"/ --recursive")
 if __name__ == '__main__':
     main()
