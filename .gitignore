@@ -4,5 +4,4 @@ USCode.db
 uscode/*
 __pycache__/*
 ingest/__pycache__/*
-*.tar.gz
 *.json
