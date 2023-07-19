@@ -18,6 +18,7 @@ def main(filtered, metadata):
     chunkSize = 1024
     textS3Bucket = 'lawlet-uscode'
     vectorS3Bucket = 'lawlet-uscode-vectors'
+    indexS3Bucket = 'lawlet-uscode-index'
     localVectorDir = 'vectorstore'
     localIndexDir = 'indexstore'
     allChunks = []
@@ -59,7 +60,7 @@ def main(filtered, metadata):
         )
     #llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
     print("adding documents to textS3Bucket")
-    os.system('s3cmd put '+ localfilename + ' ' + "s3://"+ textS3Bucket +"/ --recursive")
+    os.system('s3cmd put '+ localfilename + '/* ' + "s3://"+ textS3Bucket +"/ --recursive")
     print("adding documents to nodes")
     nodes = parser.get_nodes_from_documents(documents)
     print("adding nodes to docstore")
@@ -75,6 +76,6 @@ def main(filtered, metadata):
     print("adding vectorstore to s3")
     os.system('s3cmd put '+ localVectorDir + ' ' + "s3://"+ vectorS3Bucket +"/ --recursive")
     print("adding listindex to s3")
-    os.system('s3cmd put '+ localIndexDir + ' ' + "s3://"+ vectorS3Bucket +"/ --recursive")
+    os.system('s3cmd put '+ localIndexDir + ' ' + "s3://"+ indexS3Bucket +"/ --recursive")
 if __name__ == '__main__':
     main()
